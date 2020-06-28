@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navirf"
+    app:startDestination="@id/mainFragment">
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="tk.kvakva.testwork.ui.main.MainFragment"
+        android:label="List of the Image Files">
+        <action
+            android:id="@+id/action_mainFragment_to_imageFileFragment"
+            app:destination="@id/imageFileFragment"
+            app:popUpTo="@id/mainFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_imgFileFragment"
+            app:destination="@id/imgFileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/imageFileFragment"
+        android:name="tk.kvakva.testwork.ImageFileFragment"
+        android:label="fragment_image_file"
+        tools:layout="@layout/fragment_image_file" >
+        <argument
+            android:name="ifUri"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/imgFileFragment"
+        android:name="tk.kvakva.testwork.ImgFileFragment"
+        android:label="Look at the Image "
+        tools:layout="@layout/fragment_img_file">
+        <argument
+            android:name="ifUri"
+            app:argType="string" />
+    </fragment>
+</navigation>
