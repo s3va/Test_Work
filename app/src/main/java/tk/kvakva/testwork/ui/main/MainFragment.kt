@@ -3,8 +3,10 @@ package tk.kvakva.testwork.ui.main
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -116,7 +118,13 @@ class MainFragment : Fragment() {
 
         binding.buttonContact.setOnClickListener {
 
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+            registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
+                if (it != null) {
+                    viewModel.sUr(it)
+                }
+            }.launch(Uri.parse(DocumentsContract.EXTRA_INITIAL_URI))
+
+/*            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
                 // Provide read access to files and sub-directories in the user-selected
                 // directory.
                 flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -126,7 +134,7 @@ class MainFragment : Fragment() {
 //            putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri)
             }
 
-            startActivityForResult(intent,10)
+            startActivityForResult(intent,10)*/
 
             //viewModel.setdata(emptyList())
             //viewModel.addtotextstr(binding.editTextTextPersonName.text.toString())
