@@ -1,9 +1,16 @@
 package tk.kvakva.testwork
 
 import android.Manifest
+import android.app.usage.StorageStatsManager
+import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
+import android.os.storage.StorageManager
+import android.provider.MediaStore
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
@@ -23,11 +30,24 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
 
-        if (!allPermissionsGranted()) {
+               if (!allPermissionsGranted()) {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
 
         setupActionBarWithNavController(findNavController(R.id.fragment))
+
+       // val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+            // Provide read access to files and sub-directories in the user-selected
+            // directory.
+         //   flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+
+            // Optionally, specify a URI for the directory that should be opened in
+            // the system file picker when it loads.
+           // putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri)
+        //}
+
+        //startActivityForResult(intent, your-request-code)
+
     }
 
     /**

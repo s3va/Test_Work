@@ -1,16 +1,21 @@
 package tk.kvakva.testwork
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.graphics.Matrix
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.exifinterface.media.ExifInterface
 import kotlinx.android.synthetic.main.fragment_img_file.view.*
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
+private const val ARG_PARAM1 = "ifUri"
 private const val ARG_PARAM2 = "param2"
 
 /**
@@ -20,13 +25,13 @@ private const val ARG_PARAM2 = "param2"
  */
 class ImgFileFragment : Fragment() {
     // TODO: Rename and change types of parameters
-    private var param1: String? = null
+    private var ifUri: String? = null
     private var param2: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
+            ifUri = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
     }
@@ -37,8 +42,36 @@ class ImgFileFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val v = inflater.inflate(R.layout.fragment_img_file, container, false)
-        v.imgFileId.setImageURI(Uri.parse(arguments?.getString("ifUri")))
+        // v.imgFileId.setImageURI(Uri.parse(arguments?.getString("ifUri")))
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val inStream = v.context.contentResolver.openInputStream(Uri.parse(ifUri))
+            if (inStream != null) {
+                val exif = ExifInterface(inStream)
+                val orientation = exif.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL
+                )
+                val matrix = Matrix()
+                when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90F)
+                    ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180F)
+                    ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270F)
+                }
+                inStream.close()
+                val inStream = v.context.contentResolver.openInputStream(Uri.parse(ifUri))
+                val bm = BitmapFactory.decodeStream(inStream)
+                if (bm != null) {
+                    val rotatedBitmap =
+                        Bitmap.createBitmap(bm, 0, 0, bm.width, bm.height, matrix, true)
+                    v.imgFileId.setImageBitmap(rotatedBitmap)
+                }
+                return v
+            }
+        } else {
+            TODO("VERSION.SDK_INT < N")
+        }
+        v.imgFileId.setImageURI(Uri.parse(ifUri))
         return v
     }
 

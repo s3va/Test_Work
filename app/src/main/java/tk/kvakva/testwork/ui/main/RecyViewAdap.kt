@@ -1,7 +1,9 @@
 package tk.kvakva.testwork.ui.main
 
+import android.graphics.Bitmap
 import android.net.Uri
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import tk.kvakva.testwork.databinding.ContItemBinding
@@ -17,6 +19,7 @@ class RecyViewAdap(val clickListener: RecyViewListener) :
             binding.imageFile = item
             binding.recyviewLsnr = clickListener
             binding.executePendingBindings()
+            binding.imageView2.setImageBitmap(item.bitmap)
         }
 
         companion object {
@@ -49,14 +52,15 @@ class RecyViewAdap(val clickListener: RecyViewListener) :
 
 data class ImageFile(
     val Name: String?,
-    val Phone: String?,
+    val Phone: String? = "",
     val email: String? = "",
     val fName: String = "",
     val fPath: String = "",
     val fUri: Uri? = null,
-    val fId: Long = -1
+    val fId: Long = -1,
+    val bitmap: Bitmap? = null
 )
 
-class RecyViewListener(val clickListener: (iFl: ImageFile) -> Unit) {
-    fun onClick(imageFile: ImageFile) = clickListener(imageFile)
+class RecyViewListener(val clickListener: (view: View, iFl: ImageFile) -> Unit) {
+    fun onClick(view: View, imageFile: ImageFile) = clickListener(view, imageFile)
 }

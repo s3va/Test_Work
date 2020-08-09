@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
@@ -14,46 +15,92 @@
 
     </data>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/ilemLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="2dp"
-        android:background="@android:color/darker_gray"
-        android:orientation="vertical"
-        android:padding="4dp">
+        android:background="@android:color/darker_gray">
 
         <TextView
             android:id="@+id/nameTV"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="2dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:layout_marginLeft="3dp"
+            android:layout_marginTop="7dp"
+            android:layout_marginEnd="3dp"
+            android:layout_marginRight="3dp"
+            android:layout_marginBottom="1dp"
             android:background="@android:color/holo_orange_light"
-            android:text="@{`Name: ` + imageFile.name}"
+            android:lines="1"
+            android:onClick="@{(view) -> recyviewLsnr.onClick(view, imageFile)}"
+            android:text="@{imageFile.name}"
+            app:layout_constraintBottom_toTopOf="@+id/phoneTV"
+            app:layout_constraintEnd_toStartOf="@id/imageView2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="name: sdfasdfasdf" />
 
         <TextView
             android:id="@+id/phoneTV"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="2dp"
+            android:layout_marginStart="3dp"
+            android:layout_marginLeft="3dp"
+            android:layout_marginEnd="3dp"
+            android:layout_marginRight="3dp"
+            android:layout_marginBottom="1dp"
             android:background="@color/colorAccent"
+            android:lines="1"
             android:text="@{`Phone: ` + imageFile.phone}"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/emailTV"
+            app:layout_constraintEnd_toStartOf="@id/imageView2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/nameTV"
             tools:text="Phone: 2342342342342342342" />
 
         <TextView
             android:id="@+id/emailTV"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="2dp"
-            android:background="@android:color/holo_blue_bright"
-            android:text="@{`e-mail: ` + imageFile.email}"
+            android:layout_marginStart="3dp"
+            android:layout_marginLeft="3dp"
+            android:lines="3"
+            android:text="@{imageFile.FUri.toString()}"
+            app:layout_constraintEnd_toStartOf="@+id/imageView2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/phoneTV"
             tools:text="email: 3sdfsdf@sdfsdf.ru" />
+<!--        app:layout_constraintBottom_toTopOf="@+id/showImageBt"-->
 
-        <Button
+<!--        <Button
             android:id="@+id/showImageBt"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:layout_marginLeft="1dp"
+            android:layout_marginBottom="1dp"
             android:onClick="@{() -> recyviewLsnr.onClick(imageFile)}"
-            android:text="@string/showimage" />
-    </LinearLayout>
+            android:text="@string/showimage"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/emailTV"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/emailTV"
+            />-->
+
+<!--        android:src="@{imageFile.FUri}"-->
+        <ImageButton
+            android:scaleType="fitCenter"
+            android:id="@+id/imageView2"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/emailTV"
+            app:layout_constraintDimensionRatio="H,9:16"
+            android:onClick="@{(view) -> recyviewLsnr.onClick(view, imageFile)}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

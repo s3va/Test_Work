@@ -36,6 +36,7 @@
             android:ems="10"
             android:hint="@android:string/search_go"
             android:inputType="text"
+            android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@+id/buttonContact"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -49,6 +50,14 @@
             android:text="@string/contact"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/showDumpBt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Show Dump Text"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

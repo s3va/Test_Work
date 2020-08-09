@@ -1,18 +1,28 @@
 package tk.kvakva.testwork.ui.main
 
 import android.app.Application
+import android.content.ContentResolver
 import android.content.ContentUris
+import android.database.DatabaseUtils
+import android.graphics.Point
 import android.net.Uri
+import android.os.Build
 import android.provider.ContactsContract
+import android.provider.DocumentsContract
 import android.provider.MediaStore
+import android.system.Os
 import android.util.Log
+import android.util.Size
 import android.widget.Toast
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import tk.kvakva.testwork.DumptxtFragment
+
+private const val TAG = "MY_MainViewModel"
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
-
     private val app = application
 
     // A "projection" defines the columns that will be returned for each row
@@ -28,13 +38,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // Declares an array to contain selection arguments
     private lateinit var selectionArgs: Array<String>
 
-
     fun addtotextstr(searchstrng: String?) {
         val c = mutableListOf<ImageFile>()
         val l = makefilelist()
- /*       l.forEach {
-            c.add(ImageFile(it.fName, it.fPath, it.fUri.toString()))
-        }*/
+        /*       l.forEach {
+                   c.add(ImageFile(it.fName, it.fPath, it.fUri.toString()))
+               }*/
         _data.value = l
         return
 
@@ -176,9 +185,108 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val textstr: LiveData<String>
         get() = _textstr
 
+    private val _ur = MutableLiveData<Uri>()
+    val ur: LiveData<Uri>
+        get() = _ur
+
+    fun sUr(u: Uri) {
+        _ur.value = u
+        val filelist = arrayListOf<ImageFile>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val docUriTree = DocumentsContract.buildDocumentUriUsingTree(
+                u,
+                DocumentsContract.getTreeDocumentId(u)
+            )
+            Log.d(
+                "MY_MainViewModel",
+                "++\n         u: $u\n++++++++++++++++++++++++\ndocUriTree: $docUriTree"
+            )
+
+            app.contentResolver.query(docUriTree, null, null, null, null)?.use { cursor ->
+                while (cursor.moveToNext()) {
+                    Log.d(TAG, "sUr: +++++++++++++++++++++")
+                    DatabaseUtils.dumpCurrentRow(cursor)
+                    Log.d(TAG, "sUr: +++++++++++++++++++++")
+                }
+                cursor.close()
+            }
+
+            val fd = app.contentResolver.openFileDescriptor(docUriTree,"r")
+            val st = Os.fstatvfs(fd?.fileDescriptor)
+            Log.d(TAG, "sUr: Free ${st.f_bsize * st.f_bavail / 1024 / 1024} MByes  f_bsize: ${st.f_bsize} Bytes  f_bavail: ${st.f_bavail}")
+
+/*            app.contentResolver.query(u,null,null,null,null)?.columnNames?.toString()
+
+            app.applicationContext.contentResolver.query(
+                u,null,null,null, null
+            )?.use {cursor ->
+                DumptxtFragment.dumptxtString.clear()
+                while (cursor.moveToNext()){
+                    DatabaseUtils.dumpCurrentRow(cursor)
+                    DatabaseUtils.dumpCurrentRow(cursor, DumptxtFragment.dumptxtString)
+                    DumptxtFragment.dumptxtString.append("\n-----------------------\n")
+                    filelist.add(
+                        ImageFile(
+                            Name = cursor.getString(cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)),
+                            fId = cursor.getInt(cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)).toLong(),
+                            fUri = DocumentsContract.buildDocumentUriUsingTree(u,cursor.getString(cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)))
+                    ))
+                }
+            }
+            _data.value=filelist
+            return*/
+        } else {
+            TODO("VERSION.SDK_INT < LOLLIPOP")
+        }
+
+        val df = DocumentFile.fromTreeUri(app.applicationContext, u)
+
+        //if(df.isDirectory)
+        DumptxtFragment.dumptxtString.clear()
+
+        val dfl = df?.listFiles()
+        var iidx = 0
+        dfl?.forEach {
+            iidx++
+            filelist.add(
+                ImageFile(
+                    fUri = it.uri,
+                    Name = it.name,
+                    bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+                        DocumentsContract.getDocumentThumbnail(
+                            app.contentResolver, it.uri,
+                            Point(190, 108), null
+                        )
+                    else
+                        null
+                )
+            )
+
+            app.contentResolver.query(it.uri, null, null, null, null)?.use { cursor ->
+                /*DatabaseUtils.dumpCursor(cursor)
+                DatabaseUtils.dumpCursor(cursor,DumptxtFragment.dumptxtString)
+                DumptxtFragment.dumptxtString.append("+++++++++++++++++++++  $iidx  +++++++++++++++++\n")*/
+
+                while (cursor.moveToNext()) {
+                    DatabaseUtils.dumpCurrentRow(cursor)
+                    DatabaseUtils.dumpCurrentRow(cursor, DumptxtFragment.dumptxtString)
+                    DumptxtFragment.dumptxtString.append("------------------ $iidx -------------\n")
+                }
+            }
+
+            //Log.d("MY_MainViewModel","${app.contentResolver.query(it.uri,null,null,null,null)?.columnNames?.toList()}")
+
+            Log.d(
+                "MY_MainViewModel",
+                "\n-------------------\n$it\nname: ${it.name}\nparentFile: ${it.parentFile}\nuri: ${it.uri}\ntype: ${it.type}\nlength: ${it.length()}\nlastModified: ${it.lastModified()}\n-------------------------\n"
+            )
+        }
+        _data.value = filelist
+    }
 
     fun makefilelist(): List<ImageFile> {
         val filelist = arrayListOf<ImageFile>()
+
         getApplication<Application>().applicationContext.contentResolver.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             null,//projection,
@@ -186,21 +294,46 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             null,//selectionArgs,
             null//sortOrder
         )?.use { cursor ->
+            var i = 0
+            DumptxtFragment.dumptxtString.clear()
+            //DatabaseUtils.dumpCursor(cursor,DumptxtFragment.dumptxtString)
             while (cursor.moveToNext()) {
+                ++i;
+                DatabaseUtils.dumpCurrentRow(cursor, DumptxtFragment.dumptxtString)
+                DumptxtFragment.dumptxtString.append("\n-----------------------\n")
+                Log.d(
+                    "cursor",
+                    "${cursor.getInt(cursor.getColumnIndex(MediaStore.Images.Media._ID))} $cursor"
+                )
                 filelist.add(
                     ImageFile(
                         cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)),
-                        cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.VOLUME_NAME)) + " " +
-                        cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.RELATIVE_PATH)),
+                        bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            app.contentResolver.loadThumbnail(
+                                ContentUris.withAppendedId(
+                                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                    cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
+                                ),
+                                Size(64, 24), null
+                            )
+                        } else {
+                            null
+                        },
+                        //cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.VOLUME_NAME)) + " " +
+                        //cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.RELATIVE_PATH)),
+//                        cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.RELATIVE_PATH)),
                         fUri = ContentUris.withAppendedId(
                             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                             cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
                         ),
-                        fId = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
+                        fId = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))//,
+                        //email = cursor.getString(cursor.getColumnIndex())
                     )
                 )
                 // Use an ID column from the projection to get
                 // a URI representing the media item itself.
+                if (i > 100)
+                    break
             }
             cursor.close()
         }
@@ -209,17 +342,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onRecyViewClicked(imageFile: ImageFile) {
         Toast.makeText(app.applicationContext, "$imageFile", Toast.LENGTH_SHORT).show()
-        Log.v("OnRecyViewClicked","$imageFile")
-        _navigateToShowImageFile.value=imageFile
+        Log.v("OnRecyViewClicked", "$imageFile")
+        _navigateToShowImageFile.value = imageFile
     }
 
-    private val _navigateToShowImageFile = MutableLiveData<ImageFile>()
-    val navigateToShowImageFile: LiveData<ImageFile>
+    private val _navigateToShowImageFile = MutableLiveData<ImageFile?>()
+    val navigateToShowImageFile: LiveData<ImageFile?>
         get() = _navigateToShowImageFile
 
-     fun doneNavidateToShowImageFile() {
+    fun doneNavidateToShowImageFile() {
         _navigateToShowImageFile.value = null
     }
-
 }
-

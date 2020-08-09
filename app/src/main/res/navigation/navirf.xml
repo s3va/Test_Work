@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_mainFragment_to_imgFileFragment"
             app:destination="@id/imgFileFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_dumptxtFragment"
+            app:destination="@id/dumptxtFragment" />
     </fragment>
     <fragment
         android:id="@+id/imageFileFragment"
@@ -35,4 +38,9 @@
             android:name="ifUri"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/dumptxtFragment"
+        android:name="tk.kvakva.testwork.DumptxtFragment"
+        android:label="fragment_dumptxt"
+        tools:layout="@layout/fragment_dumptxt" />
 </navigation>
