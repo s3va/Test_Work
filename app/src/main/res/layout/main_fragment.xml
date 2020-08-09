@@ -96,10 +96,13 @@
 
         <TextView
             android:id="@+id/progressTv"
-            android:visibility="@{fVModel.progressVisable ? View.VISIBLE : View.GONE }"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:alpha="0.5"
+            android:background="?android:attr/colorBackground"
             android:text="@{fVModel.progressText}"
+            android:textSize="28sp"
+            android:visibility="@{fVModel.progressVisable ? View.VISIBLE : View.GONE }"
             app:layout_constraintBottom_toTopOf="@+id/progressBar2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
