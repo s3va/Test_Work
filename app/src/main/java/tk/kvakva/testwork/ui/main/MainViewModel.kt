@@ -345,7 +345,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     filelist.add(
                         ImageFile(
                             cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)),
-                            bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            bitmap = /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                 app.contentResolver.loadThumbnail(
                                     ContentUris.withAppendedId(
                                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -353,7 +353,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                                     ),
                                     Size(64, 24), null
                                 )
-                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                            } else*/ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                                 DocumentsContract.getDocumentThumbnail(
                                     app.contentResolver,
                                     ContentUris.withAppendedId(

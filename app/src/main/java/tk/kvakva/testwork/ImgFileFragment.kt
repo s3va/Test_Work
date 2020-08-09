@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.exifinterface.media.ExifInterface
 import kotlinx.android.synthetic.main.fragment_img_file.view.*
+import java.io.FileNotFoundException
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -45,28 +46,32 @@ class ImgFileFragment : Fragment() {
         // v.imgFileId.setImageURI(Uri.parse(arguments?.getString("ifUri")))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val inStream = v.context.contentResolver.openInputStream(Uri.parse(ifUri))
-            if (inStream != null) {
-                val exif = ExifInterface(inStream)
-                val orientation = exif.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_NORMAL
-                )
-                val matrix = Matrix()
-                when (orientation) {
-                    ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90F)
-                    ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180F)
-                    ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270F)
-                }
-                inStream.close()
+            try {
                 val inStream = v.context.contentResolver.openInputStream(Uri.parse(ifUri))
-                val bm = BitmapFactory.decodeStream(inStream)
-                if (bm != null) {
-                    val rotatedBitmap =
-                        Bitmap.createBitmap(bm, 0, 0, bm.width, bm.height, matrix, true)
-                    v.imgFileId.setImageBitmap(rotatedBitmap)
+                if (inStream != null) {
+                    val exif = ExifInterface(inStream)
+                    val orientation = exif.getAttributeInt(
+                        ExifInterface.TAG_ORIENTATION,
+                        ExifInterface.ORIENTATION_NORMAL
+                    )
+                    val matrix = Matrix()
+                    when (orientation) {
+                        ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90F)
+                        ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180F)
+                        ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270F)
+                    }
+                    inStream.close()
+                    val inStream = v.context.contentResolver.openInputStream(Uri.parse(ifUri))
+                    val bm = BitmapFactory.decodeStream(inStream)
+                    if (bm != null) {
+                        val rotatedBitmap =
+                            Bitmap.createBitmap(bm, 0, 0, bm.width, bm.height, matrix, true)
+                        v.imgFileId.setImageBitmap(rotatedBitmap)
+                    }
+                    return v
                 }
-                return v
+            } catch (e: FileNotFoundException) {
+                e.printStackTrace()
             }
         } else {
             TODO("VERSION.SDK_INT < N")
