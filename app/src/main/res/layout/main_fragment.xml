@@ -80,5 +80,29 @@
             android:visibility="@{fVModel.progressVisable ? View.VISIBLE : View.GONE }"
             />
 
+        <ProgressBar
+            android:id="@+id/progressBar2"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:visibility="@{fVModel.progressVisable ? View.VISIBLE : View.GONE }"
+            android:progress="@{fVModel.progressHorizont}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.32999998" />
+
+        <TextView
+            android:id="@+id/progressTv"
+            android:visibility="@{fVModel.progressVisable ? View.VISIBLE : View.GONE }"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{fVModel.progressText}"
+            app:layout_constraintBottom_toTopOf="@+id/progressBar2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

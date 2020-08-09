@@ -301,6 +301,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _progressVisable.value=true
     }
 
+    private val _progressHorizont = MutableLiveData<Int>(0)
+    val progressHorizont: LiveData<Int>
+        get() = _progressHorizont
+
+    private val _progressText = MutableLiveData<String>("10 from 100 (10%)")
+    val progressText: LiveData<String>
+        get() = _progressText
+
     fun makefilelist() {
         _progressVisable.value=true
         viewModelScope.launch(Dispatchers.IO) {
@@ -318,7 +326,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 DumptxtFragment.dumptxtString.clear()
                 //DatabaseUtils.dumpCursor(cursor,DumptxtFragment.dumptxtString)
                 while (cursor.moveToNext()) {
-                    ++i;
+                    val p = cursor.position * 100 / cursor.count
+                    _progressHorizont.postValue(p)
+                    _progressText.postValue("${cursor.position} from ${cursor.count} ($p%)")
+
+                    ++i
                     DatabaseUtils.dumpCurrentRow(cursor, DumptxtFragment.dumptxtString)
                     DumptxtFragment.dumptxtString.append("\n-----------------------\n")
                     Log.d(
@@ -367,8 +379,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     )
                     // Use an ID column from the projection to get
                     // a URI representing the media item itself.
-                    if (i > 100)
-                        break
+                    //if (i > 100)
+                    //    break
                 }
                 cursor.close()
             }
