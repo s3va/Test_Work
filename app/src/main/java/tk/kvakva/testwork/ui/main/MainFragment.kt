@@ -156,6 +156,8 @@ class MainFragment : Fragment() {
 
         viewModel.data.observe(viewLifecycleOwner, Observer{
             recyViewAdap.data=it
+            viewModel.progressOff()
+
             Log.d("Fragment","observer data => $it")
         })
 

@@ -18,6 +18,11 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import tk.kvakva.testwork.DumptxtFragment
 
 private const val TAG = "MY_MainViewModel"
@@ -40,11 +45,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addtotextstr(searchstrng: String?) {
         val c = mutableListOf<ImageFile>()
-        val l = makefilelist()
+       // val l = makefilelist()
         /*       l.forEach {
                    c.add(ImageFile(it.fName, it.fPath, it.fUri.toString()))
                }*/
-        _data.value = l
+      //  _data.value = l
         return
 
 
@@ -284,60 +289,91 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _data.value = filelist
     }
 
-    fun makefilelist(): List<ImageFile> {
-        val filelist = arrayListOf<ImageFile>()
+    private val _progressVisable = MutableLiveData<Boolean>(false)
+    val progressVisable: LiveData<Boolean>
+        get() = _progressVisable
 
-        getApplication<Application>().applicationContext.contentResolver.query(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            null,//projection,
-            null,//selection,
-            null,//selectionArgs,
-            null//sortOrder
-        )?.use { cursor ->
-            var i = 0
-            DumptxtFragment.dumptxtString.clear()
-            //DatabaseUtils.dumpCursor(cursor,DumptxtFragment.dumptxtString)
-            while (cursor.moveToNext()) {
-                ++i;
-                DatabaseUtils.dumpCurrentRow(cursor, DumptxtFragment.dumptxtString)
-                DumptxtFragment.dumptxtString.append("\n-----------------------\n")
-                Log.d(
-                    "cursor",
-                    "${cursor.getInt(cursor.getColumnIndex(MediaStore.Images.Media._ID))} $cursor"
-                )
-                filelist.add(
-                    ImageFile(
-                        cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)),
-                        bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            app.contentResolver.loadThumbnail(
-                                ContentUris.withAppendedId(
-                                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                                    cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
-                                ),
-                                Size(64, 24), null
-                            )
-                        } else {
-                            null
-                        },
-                        //cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.VOLUME_NAME)) + " " +
-                        //cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.RELATIVE_PATH)),
-//                        cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.RELATIVE_PATH)),
-                        fUri = ContentUris.withAppendedId(
-                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                            cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
-                        ),
-                        fId = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))//,
-                        //email = cursor.getString(cursor.getColumnIndex())
+    fun progressOff() {
+        _progressVisable.value=false
+    }
+
+    fun progressOn() {
+        _progressVisable.value=true
+    }
+
+    fun makefilelist() {
+        _progressVisable.value=true
+        viewModelScope.launch(Dispatchers.IO) {
+
+            val filelist = arrayListOf<ImageFile>()
+
+            getApplication<Application>().applicationContext.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                null,//projection,
+                null,//selection,
+                null,//selectionArgs,
+                null//sortOrder
+            )?.use { cursor ->
+                var i = 0
+                DumptxtFragment.dumptxtString.clear()
+                //DatabaseUtils.dumpCursor(cursor,DumptxtFragment.dumptxtString)
+                while (cursor.moveToNext()) {
+                    ++i;
+                    DatabaseUtils.dumpCurrentRow(cursor, DumptxtFragment.dumptxtString)
+                    DumptxtFragment.dumptxtString.append("\n-----------------------\n")
+                    Log.d(
+                        "cursor",
+                        "${cursor.getInt(cursor.getColumnIndex(MediaStore.Images.Media._ID))} $cursor"
                     )
-                )
-                // Use an ID column from the projection to get
-                // a URI representing the media item itself.
-                if (i > 100)
-                    break
+                    val picUri = ContentUris.withAppendedId(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
+                    )
+
+                    filelist.add(
+                        ImageFile(
+                            cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)),
+                            bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                app.contentResolver.loadThumbnail(
+                                    ContentUris.withAppendedId(
+                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                        cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
+                                    ),
+                                    Size(64, 24), null
+                                )
+                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                                DocumentsContract.getDocumentThumbnail(
+                                    app.contentResolver,
+                                    ContentUris.withAppendedId(
+                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                        cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
+                                    ),
+                                    Point(190, 108),
+                                    null
+                                )
+                            } else {
+                                null
+                            },
+                            //cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.VOLUME_NAME)) + " " +
+                            //cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.RELATIVE_PATH)),
+//                        cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.RELATIVE_PATH)),
+                            fUri = ContentUris.withAppendedId(
+                                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
+                            ),
+                            fId = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))//,
+                            //email = cursor.getString(cursor.getColumnIndex())
+                        )
+                    )
+                    // Use an ID column from the projection to get
+                    // a URI representing the media item itself.
+                    if (i > 100)
+                        break
+                }
+                cursor.close()
             }
-            cursor.close()
+            _data.postValue(filelist)
         }
-        return filelist
     }
 
     fun onRecyViewClicked(imageFile: ImageFile) {
